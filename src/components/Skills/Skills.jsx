@@ -1,13 +1,46 @@
 import { motion } from 'framer-motion';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
 import { ANIMATION_VARIANTS } from '../../utils/constants';
-import { SKILLS_DATA } from '../../data/skills';
+import { SkillService } from '../../services/SkillService';
 import '../../styles/Skills.css';
+import { useState, useEffect } from 'react';
 
 const Skills = () => {
   const { elementRef, isIntersecting } = useIntersectionObserver({
     threshold: 0.1,
   });
+
+  const [skillsData, setSkillsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const result = await SkillService.getAllSkills();
+        if (result.success) {
+          setSkillsData(result.data);
+        } else {
+          console.error('Error fetching skills:', result.error);
+        }
+      } catch (error) {
+        console.error('Unexpected error fetching skills:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSkills();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="skills" className="skills">
+        <div className="container">
+          <div className="loading">Loading skills...</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="skills" ref={elementRef} className="skills">
@@ -23,7 +56,7 @@ const Skills = () => {
         </motion.div>
 
         <div className="skills-content">
-          {SKILLS_DATA.map((category, index) => (
+          {skillsData.map((category, index) => (
             <motion.div
               key={index}
               className="skill-category"

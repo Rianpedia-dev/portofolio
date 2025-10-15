@@ -1,41 +1,61 @@
 import { motion } from 'framer-motion';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
 import { ANIMATION_VARIANTS } from '../../utils/constants';
+import { AboutService } from '../../services/AboutService';
+import { TimelineService } from '../../services/TimelineService';
 import './About.css';
+import { useState, useEffect } from 'react';
 
 const About = () => {
   const { elementRef, isIntersecting } = useIntersectionObserver({
     threshold: 0.1,
   });
 
-  // Sample timeline data
-  const timelineData = [
-    {
-      year: '2008 – 2014',
-      title: 'Sekolah Dasar',
-      description: 'Mulai mengenal dunia komputer dan teknologi dasar. Dari sini muncul rasa ingin tahu tentang bagaimana teknologi membantu aktivitas manusia.',
-    },
-    {
-      year: '2015 - 2018',
-      title: 'Sekolah Menengah Pertama (SMP)',
-      description: 'Mulai aktif mengikuti kegiatan teknologi dan komputer di sekolah. Rasa penasaran tumbuh menjadi ketertarikan untuk memahami cara kerja perangkat lunak.',
-    },
-    {
-      year: '2019 - 2021',
-      title: 'Sekolah Menengah Atas (SMA)',
-      description: 'Membuat situs web dan aplikasi web untuk bisnis kecil menggunakan HTML, CSS, dan JavaScript.',
-    },
-    {
-      year: '2022 – Sekarang',
-      title: 'Fakultas Ilmu Komputer, Universitas Sjakhayakirti',
-      description: 'Menempuh studi di Program Studi Informatika dan fokus menekuni bidang Full Stack Web Development, serta Mulai mendalami teknologi AI dan penerapannya dalam pengembangan web.',
-    },
-     {
-      year: '2023 – Sekarang',
-      title: 'Project Development',
-      description: 'Web App Fakultas Ekonomi Universitas Palembang danWeb App PMB Universitas Palembang Terus mengembangkan diri menuju impian menjadi Full Stack Developer dan AI Engineer profesional.',
-    },
-  ];
+  const [aboutSections, setAboutSections] = useState([]);
+  const [timeline, setTimeline] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAboutData = async () => {
+      try {
+        const result = await AboutService.getAllAboutData();
+        if (result.success) {
+          setAboutSections(result.data.sections || []);
+          setTimeline(result.data.timeline || []);
+        } else {
+          console.error('Error fetching about data:', result.error);
+          // Jika gagal, gunakan data default sebagai fallback
+          setAboutSections([{
+            id: 1,
+            section_title: 'Kenali Saya',
+            content: 'Saya adalah mahasiswa Fakultas Ilmu Komputer, Program Studi Informatika, yang memiliki minat besar di bidang Full Stack Web Development dan Artificial Intelligence (AI). Selama lebih dari 1,5 tahun, saya telah mengasah kemampuan dalam pengembangan aplikasi berbasis web menggunakan React.js, Vite, Node.js, Express, dan MySQL, serta mulai mendalami integrasi AI untuk menciptakan solusi digital yang lebih cerdas dan efisien.\n\nSaya telah menyelesaikan beberapa project nyata, di antaranya Web App Fakultas Ekonomi Universitas Palembang dan Web App PMB Universitas Palembang. Saya selalu bersemangat untuk belajar teknologi baru, membangun sistem yang berdampak positif, dan berkontribusi di dunia teknologi. Tujuan saya adalah menjadi Full Stack Developer sekaligus AI Engineer yang mampu menghadirkan inovasi dan nilai tambah bagi perusahaan besar di masa depan.'
+          }]);
+        }
+      } catch (error) {
+        console.error('Unexpected error fetching about data:', error);
+        // Fallback ke data default
+        setAboutSections([{
+          id: 1,
+          section_title: 'Kenali Saya',
+          content: 'Saya adalah mahasiswa Fakultas Ilmu Komputer, Program Studi Informatika, yang memiliki minat besar di bidang Full Stack Web Development dan Artificial Intelligence (AI). Selama lebih dari 1,5 tahun, saya telah mengasah kemampuan dalam pengembangan aplikasi berbasis web menggunakan React.js, Vite, Node.js, Express, dan MySQL, serta mulai mendalami integrasi AI untuk menciptakan solusi digital yang lebih cerdas dan efisien.\n\nSaya telah menyelesaikan beberapa project nyata, di antaranya Web App Fakultas Ekonomi Universitas Palembang dan Web App PMB Universitas Palembang. Saya selalu bersemangat untuk belajar teknologi baru, membangun sistem yang berdampak positif, dan berkontribusi di dunia teknologi. Tujuan saya adalah menjadi Full Stack Developer sekaligus AI Engineer yang mampu menghadirkan inovasi dan nilai tambah bagi perusahaan besar di masa depan.'
+        }]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAboutData();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="about" className="about">
+        <div className="container">
+          <div className="loading">Loading about information...</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="about" ref={elementRef} className="about">
@@ -57,13 +77,10 @@ const About = () => {
             animate={isIntersecting ? "visible" : "hidden"}
             variants={ANIMATION_VARIANTS.slideInLeft}
           >
-            <h3>Kenali Saya</h3>
-            <p>
-              Saya adalah mahasiswa Fakultas Ilmu Komputer, Program Studi Informatika, yang memiliki minat besar di bidang Full Stack Web Development dan Artificial Intelligence (AI). Selama lebih dari 1,5 tahun, saya telah mengasah kemampuan dalam pengembangan aplikasi berbasis web menggunakan React.js, Vite, Node.js, Express, dan MySQL, serta mulai mendalami integrasi AI untuk menciptakan solusi digital yang lebih cerdas dan efisien.
-            </p>
-            <p>
-              Saya telah menyelesaikan beberapa project nyata, di antaranya Web App Fakultas Ekonomi Universitas Palembang dan Web App PMB Universitas Palembang. Saya selalu bersemangat untuk belajar teknologi baru, membangun sistem yang berdampak positif, dan berkontribusi di dunia teknologi. Tujuan saya adalah menjadi Full Stack Developer sekaligus AI Engineer yang mampu menghadirkan inovasi dan nilai tambah bagi perusahaan besar di masa depan.
-            </p>
+            <h3>{aboutSections[0]?.section_title || 'Kenali Saya'}</h3>
+            {aboutSections[0]?.content?.split('\n\n').map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
           </motion.div>
 
           <motion.div
@@ -74,7 +91,7 @@ const About = () => {
           >
             <h3>Perjalanan Saya</h3>
             <div className="timeline-items">
-              {timelineData.map((item, index) => (
+              {timeline.map((item, index) => (
                 <div key={index} className="timeline-item">
                   <div className="timeline-year">{item.year}</div>
                   <div className="timeline-content">

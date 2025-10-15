@@ -29,11 +29,44 @@ const ProjectCard = memo(({ project, index, isIntersecting }) => {
         <h3>{project.title}</h3>
         <p>{project.description}</p>
         <div className="project-tech">
-          {project.tech.map((tech, idx) => (
-            <span key={idx} className="tech-tag">{tech}</span>
-          ))}
+          {project.tech && Array.isArray(project.tech) 
+            ? project.tech.map((tech, idx) => (
+                <span key={idx} className="tech-tag">{tech}</span>
+              ))
+            : project.tech && typeof project.tech === 'string' 
+              ? project.tech.split(',').map((tech, idx) => (
+                  <span key={idx} className="tech-tag">{tech.trim()}</span>
+                ))
+              : null
+          }
         </div>
         
+        <div className="project-links">
+          {project.github && (
+            <a 
+              href={project.github} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="project-link"
+              aria-label={`Source code for ${project.title}`}
+            >
+              <FaGithub />
+              <span>Code</span>
+            </a>
+          )}
+          {project.link && (
+            <a 
+              href={project.link} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="project-link"
+              aria-label={`Live demo for ${project.title}`}
+            >
+              <FaExternalLinkAlt />
+              <span>Live</span>
+            </a>
+          )}
+        </div>
       </div>
     </motion.article>
   );
